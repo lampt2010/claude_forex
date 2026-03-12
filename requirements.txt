@@ -1,72 +1,68 @@
-# ============================================================
-# Forex Trading Bot — Python Dependencies
-# Bot Giao Dịch Forex — Các Gói Phụ Thuộc Python
-# ============================================================
+# Forex Trading Bot - Python Dependencies
 # Install: pip install -r requirements.txt
-# Python: 3.10 – 3.12 recommended
-# Platform: Windows (MetaTrader5 package is Windows-only)
-# ============================================================
+# Python: 3.10 - 3.12 recommended
+# Platform: Windows (MetaTrader5 is Windows-only)
 
-# ── CrewAI framework / Khung CrewAI ─────────────────────────
+# CrewAI framework
 crewai[tools]==0.80.0
 crewai-tools==0.14.0
 
-# ── LangChain LLM backends / Backend LLM LangChain ──────────
+# LangChain LLM backends
 langchain-openai==0.2.14
 langchain-anthropic==0.3.3
 langchain-groq==0.2.2
 langchain-core==0.3.28
 
-# ── MetaTrader 5 (Windows only) / MT5 (chỉ Windows) ─────────
+# MetaTrader 5 (Windows only)
 MetaTrader5==5.0.4550
 
-# ── Data processing / Xử lý dữ liệu ────────────────────────
+# Data processing
 pandas==2.2.3
 numpy==1.26.4
 
-# ── Technical indicators / Chỉ báo kỹ thuật ─────────────────
+# Technical indicators
 pandas-ta==0.3.14b0
 
-# ── Charting / Vẽ biểu đồ ───────────────────────────────────
+# Charting
 mplfinance==0.12.10b0
 matplotlib==3.9.3
 plotly==5.24.1
 
-# ── Streamlit dashboard / Bảng điều khiển Streamlit ─────────
+# Streamlit dashboard
 streamlit==1.40.2
 
-# ── Computer vision / Thị giác máy tính ─────────────────────
+# Computer vision
 opencv-python==4.10.0.84
 scikit-image==0.24.0
 imagehash==4.3.1
 Pillow==11.0.0
 
-# ── CLIP deep learning / Học sâu CLIP ───────────────────────
+# CLIP deep learning
 torch==2.5.1
 torchvision==0.20.1
 transformers==4.47.1
 
-# ── Database / Cơ sở dữ liệu ────────────────────────────────
+# Database
 SQLAlchemy==2.0.36
 
-# ── Report generation / Tạo báo cáo ─────────────────────────
+# Report generation
 fpdf2==2.8.1
 
-# ── Logging / Ghi nhật ký ────────────────────────────────────
+# Logging
 structlog==24.4.0
 
-# ── Configuration & environment / Cấu hình & môi trường ─────
+# Configuration and environment
 python-dotenv==1.0.1
 PyYAML==6.0.2
 
-# ── HTTP / networking / Mạng ─────────────────────────────────
+# HTTP networking
 requests==2.32.3
 
-# ── Telegram notifications / Thông báo Telegram ──────────────
+# Telegram notifications
 python-telegram-bot==21.9
 
-# ── Scheduling / Lập lịch ────────────────────────────────────
+# Scheduling
 schedule==1.2.2
 
-# ── Scientific computing / Tính toán khoa học ───────────────
+# Scientific computing
 scipy==1.14.1
