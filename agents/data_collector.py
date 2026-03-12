@@ -21,34 +21,33 @@ from tools.mt5_tools import MT5AccountInfoTool, MT5ConnectionTool, MT5FetchDataT
 
 def _get_llm(config: Dict[str, Any]):
     """
-    Instantiate the LLM backend based on config.
-    Khởi tạo backend LLM dựa trên cấu hình.
+    Instantiate the LLM backend based on config using crewai.LLM.
+    Khoi tao backend LLM dua tren cau hinh su dung crewai.LLM.
     Supports: openai, anthropic, groq
     """
-    provider = config.get("llm", {}).get("provider", "openai").lower()
-    model = config.get("llm", {}).get("model", "gpt-4o")
+    from crewai import LLM
+
+    provider = config.get("llm", {}).get("provider", "groq").lower()
+    model = config.get("llm", {}).get("model", "llama-3.3-70b-versatile")
     temperature = config.get("llm", {}).get("temperature", 0.1)
 
     if provider == "anthropic":
-        from langchain_anthropic import ChatAnthropic
-        return ChatAnthropic(
-            model=model,
+        return LLM(
+            model=f"anthropic/{model}",
             temperature=temperature,
-            anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
+            api_key=os.getenv("ANTHROPIC_API_KEY", ""),
         )
     elif provider == "groq":
-        from langchain_groq import ChatGroq
-        return ChatGroq(
-            model=model,
+        return LLM(
+            model=f"groq/{model}",
             temperature=temperature,
-            groq_api_key=os.getenv("GROQ_API_KEY", ""),
+            api_key=os.getenv("GROQ_API_KEY", ""),
         )
-    else:  # default: openai
-        from langchain_openai import ChatOpenAI
-        return ChatOpenAI(
+    else:  # openai
+        return LLM(
             model=model,
             temperature=temperature,
-            openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+            api_key=os.getenv("OPENAI_API_KEY", ""),
         )
 
 

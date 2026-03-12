@@ -186,21 +186,21 @@ class MT5FetchDataTool(BaseTool):
 # Account Info Tool / Công cụ thông tin tài khoản
 # ────────────────────────────────────────────────────────────────────────────
 
-class _EmptyInput(BaseModel):
-    pass
+class _AccountInput(BaseModel):
+    refresh: bool = Field(default=True, description="Set to true to fetch latest account info from MT5")
 
 
 class MT5AccountInfoTool(BaseTool):
     """
     Get MT5 account balance, equity, margin.
-    Lấy số dư, vốn chủ sở hữu, ký quỹ tài khoản MT5.
+    Lay so du, von chu so huu, ky quy tai khoan MT5.
     """
 
     name: str = "mt5_account_info"
     description: str = "Retrieve current MetaTrader 5 account info: balance, equity, free margin, profit."
-    args_schema: Type[BaseModel] = _EmptyInput
+    args_schema: Type[BaseModel] = _AccountInput
 
-    def _run(self) -> str:
+    def _run(self, refresh: bool = True) -> str:
         from utils.shared_state import shared_state
 
         try:

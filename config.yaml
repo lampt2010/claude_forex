@@ -10,18 +10,11 @@ trading:
   # Currency pairs to trade / Các cặp tiền để giao dịch
   symbols:
     - EURUSD
-    - GBPUSD
-    - USDJPY
-    - AUDUSD
-    - USDCAD
-    - NZDUSD
 
   # Timeframes to analyse / Khung thời gian để phân tích
   # Each symbol × timeframe = one pipeline run per cycle
   timeframes:
-    - M15
     - H1
-    - H4
 
   # Minutes between full analysis cycles / Phút giữa các chu kỳ phân tích đầy đủ
   interval_minutes: 15
@@ -126,5 +119,5 @@ logging:
 
 # ── CrewAI settings / Cài đặt CrewAI ────────────────────────
 crew:
-  max_rpm: 10                  # Max LLM requests per minute
+  max_rpm: 3                  # Max LLM requests per minute
   memory: false                # Enable CrewAI memory (uses more tokens)

@@ -67,7 +67,6 @@ def setup_logger(config: dict) -> None:
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="ISO", utc=False),
-            structlog.stdlib.add_logger_name,
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             renderer,
