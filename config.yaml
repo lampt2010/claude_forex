@@ -1,0 +1,130 @@
+# ============================================================
+# Forex Trading Bot — Configuration File
+# Bot Giao Dịch Forex — File Cấu Hình
+# ============================================================
+# Edit this file to customise behaviour without changing code.
+# Chỉnh sửa file này để tùy chỉnh hành vi mà không thay đổi code.
+
+# ── Trading parameters / Tham số giao dịch ──────────────────
+trading:
+  # Currency pairs to trade / Các cặp tiền để giao dịch
+  symbols:
+    - EURUSD
+    - GBPUSD
+    - USDJPY
+    - AUDUSD
+    - USDCAD
+    - NZDUSD
+
+  # Timeframes to analyse / Khung thời gian để phân tích
+  # Each symbol × timeframe = one pipeline run per cycle
+  timeframes:
+    - M15
+    - H1
+    - H4
+
+  # Minutes between full analysis cycles / Phút giữa các chu kỳ phân tích đầy đủ
+  interval_minutes: 15
+
+  # Number of candles to fetch per symbol/TF / Số nến để lấy mỗi cặp/TF
+  candles_count: 500
+
+  # Risk per trade as % of account balance / Rủi ro mỗi giao dịch theo % số dư
+  risk_percent: 1.0
+
+  # Maximum total daily loss before trading is halted
+  # Tổng lỗ tối đa trong ngày trước khi dừng giao dịch
+  max_daily_loss_percent: 5.0
+
+  # Minimum Risk:Reward ratio (TP / SL) / Tỷ lệ R:R tối thiểu
+  min_rr_ratio: 2.0
+
+  # Max simultaneous open positions / Số vị thế mở tối đa đồng thời
+  max_positions: 5
+
+  # S/R detection parameters / Tham số phát hiện hỗ trợ/kháng cự
+  sr_lookback: 100
+  sr_tolerance_pips: 10.0
+
+# ── MetaTrader 5 / MetaTrader 5 ─────────────────────────────
+# These can also be set in .env (preferred for security)
+# Các thông tin này cũng có thể được đặt trong .env (ưu tiên vì bảo mật hơn)
+mt5:
+  login: 0                    # Override with MT5_LOGIN in .env
+  password: ""                # Override with MT5_PASSWORD in .env
+  server: "ICMarkets-Demo"    # Override with MT5_SERVER in .env
+  timeout: 60000              # Connection timeout in ms
+  magic_number: 20241201      # Unique identifier for bot orders
+
+# ── LLM Backend / Backend LLM ───────────────────────────────
+# provider: openai | anthropic | groq
+# Nhà cung cấp: openai | anthropic | groq
+llm:
+  provider: openai
+  model: gpt-4o               # gpt-4o | claude-opus-4-6 | llama-3.3-70b-versatile
+  temperature: 0.1
+  max_tokens: 2000
+
+# ── Chart settings / Cài đặt biểu đồ ───────────────────────
+charts:
+  folder: ./charts
+  candles_to_plot: 150
+  style: nightclouds           # mplfinance style: nightclouds, charles, yahoo...
+  dpi: 150
+  figsize_w: 14
+  figsize_h: 8
+
+# ── Pattern recognition / Nhận dạng mẫu giá ─────────────────
+patterns:
+  folder: ./patterns
+  top_matches: 3               # Return top N pattern matches
+  min_confidence: 0.25         # Ignore matches below this (0–1)
+  # Methods to use / Các phương pháp sử dụng:
+  # ssim   = Structural Similarity Index (fast, pixel-level)
+  # phash  = Perceptual hash (fast, shape-based)
+  # clip   = CLIP embeddings (slow on first load, most accurate)
+  methods:
+    - ssim
+    - phash
+    - clip
+
+# ── Technical indicators / Chỉ báo kỹ thuật ─────────────────
+indicators:
+  sma_periods: [20, 50, 200]
+  ema_periods: [9, 21, 55]
+  rsi_period: 14
+  macd_fast: 12
+  macd_slow: 26
+  macd_signal: 9
+  bb_period: 20
+  bb_std: 2.0
+  atr_period: 14
+  stoch_k: 14
+  stoch_d: 3
+
+# ── Database / Cơ sở dữ liệu ─────────────────────────────────
+database:
+  path: ./trading_bot.db
+
+# ── Reports / Báo cáo ────────────────────────────────────────
+reports:
+  folder: ./reports
+  generate_every_hours: 24
+  format: html                 # html | pdf
+
+# ── Telegram (optional) / Telegram (tùy chọn) ───────────────
+telegram:
+  enabled: false
+  bot_token: ""                # Set in .env as TELEGRAM_BOT_TOKEN
+  chat_id: ""                  # Set in .env as TELEGRAM_CHAT_ID
+
+# ── Logging / Ghi nhật ký ────────────────────────────────────
+logging:
+  level: INFO                  # DEBUG | INFO | WARNING | ERROR
+  verbose: true                # CrewAI verbose output
+  log_file: ./logs/trading_bot.log
+
+# ── CrewAI settings / Cài đặt CrewAI ────────────────────────
+crew:
+  max_rpm: 10                  # Max LLM requests per minute
+  memory: false                # Enable CrewAI memory (uses more tokens)

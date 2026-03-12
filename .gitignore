@@ -1,0 +1,34 @@
+# Secrets / Bí mật
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# Generated files / File được tạo ra
+*.db
+*.db-shm
+*.db-wal
+charts/*.png
+charts/*.html
+reports/*.html
+reports/*.pdf
+reports/*.csv
+logs/*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Torch/HuggingFace cache
+.cache/
