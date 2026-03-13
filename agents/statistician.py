@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from crewai import Agent, Task
+from utils.llm_factory import get_llm
 
 from tools.report_tools import GenerateHTMLReportTool, GeneratePDFReportTool
 
@@ -24,9 +25,7 @@ def create_statistician_agent(config: Dict[str, Any]) -> Agent:
     Build the StatisticianAgent with reporting tools.
     Xây dựng StatisticianAgent với các công cụ báo cáo.
     """
-    from agents.data_collector import _get_llm
-
-    llm = _get_llm(config)
+    llm = get_llm(config)
     report_fmt = config.get("reports", {}).get("format", "html")
 
     return Agent(

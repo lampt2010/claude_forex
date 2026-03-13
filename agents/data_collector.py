@@ -15,40 +15,9 @@ import os
 from typing import Any, Dict
 
 from crewai import Agent, Task
+from utils.llm_factory import get_llm
 
 from tools.mt5_tools import MT5AccountInfoTool, MT5ConnectionTool, MT5FetchDataTool
-
-
-def _get_llm(config: Dict[str, Any]):
-    """
-    Instantiate the LLM backend based on config using crewai.LLM.
-    Khoi tao backend LLM dua tren cau hinh su dung crewai.LLM.
-    Supports: openai, anthropic, groq
-    """
-    from crewai import LLM
-
-    provider = config.get("llm", {}).get("provider", "groq").lower()
-    model = config.get("llm", {}).get("model", "llama-3.3-70b-versatile")
-    temperature = config.get("llm", {}).get("temperature", 0.1)
-
-    if provider == "anthropic":
-        return LLM(
-            model=f"anthropic/{model}",
-            temperature=temperature,
-            api_key=os.getenv("ANTHROPIC_API_KEY", ""),
-        )
-    elif provider == "groq":
-        return LLM(
-            model=f"groq/{model}",
-            temperature=temperature,
-            api_key=os.getenv("GROQ_API_KEY", ""),
-        )
-    else:  # openai
-        return LLM(
-            model=model,
-            temperature=temperature,
-            api_key=os.getenv("OPENAI_API_KEY", ""),
-        )
 
 
 def create_data_collector_agent(config: Dict[str, Any]) -> Agent:
@@ -56,7 +25,7 @@ def create_data_collector_agent(config: Dict[str, Any]) -> Agent:
     Build the DataCollectorAgent with MT5 tools.
     Xây dựng DataCollectorAgent với các công cụ MT5.
     """
-    llm = _get_llm(config)
+    llm = get_llm(config)
 
     return Agent(
         role="Senior MT5 Data Engineer",
@@ -97,9 +66,9 @@ def create_data_collection_task(
     timeframe = context["timeframe"]
     count = config.get("trading", {}).get("candles_count", 500)
 
-    mt5_login = config.get("mt5", {}).get("login", 0)
-    mt5_password = config.get("mt5", {}).get("password", "")
-    mt5_server = config.get("mt5", {}).get("server", "")
+    mt5_login = int(os.getenv("MT5_LOGIN", str(config.get("mt5", {}).get("login", 0))))
+    mt5_password = os.getenv("MT5_PASSWORD", config.get("mt5", {}).get("password", ""))
+    mt5_server = os.getenv("MT5_SERVER", config.get("mt5", {}).get("server", ""))
 
     return Task(
         description=(

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\ADMIN\\\\Documents\\\\code\\\\claude\\\\forex_trading_bot\" && venv/Scripts/python.exe main.py --once 2>&1)"
+    ]
+  }
+}

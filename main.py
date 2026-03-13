@@ -30,6 +30,11 @@ import signal
 import sys
 import time
 import threading
+
+# Force UTF-8 on Windows to handle emoji output from CrewAI / libraries
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from datetime import datetime, time as dtime
 from pathlib import Path
 from typing import Dict, Any
@@ -214,13 +219,29 @@ def main(args: argparse.Namespace) -> None:
     db.initialize()
 
     logger.info(
-        "🚀 Forex Trading Bot starting",
+        "Forex Trading Bot starting",
         version="1.0.0",
         provider=config.get("llm", {}).get("provider", "openai"),
         symbols=config["trading"]["symbols"],
         timeframes=config["trading"]["timeframes"],
         interval_min=config["trading"]["interval_minutes"],
     )
+
+    # Connect MT5 once — all tools reuse this single session
+    # Kết nối MT5 một lần — tất cả tools dùng chung session này
+    try:
+        import MetaTrader5 as mt5
+        import os as _os
+        _login = int(_os.getenv("MT5_LOGIN", "0"))
+        _password = _os.getenv("MT5_PASSWORD", "")
+        _server = _os.getenv("MT5_SERVER", "")
+        if mt5.initialize(login=_login, password=_password, server=_server):
+            info = mt5.account_info()
+            logger.info("MT5 connected", login=info.login, server=info.server, balance=info.balance)
+        else:
+            logger.warning("MT5 init failed — will run in simulation mode", error=str(mt5.last_error()))
+    except ImportError:
+        logger.warning("MetaTrader5 not installed — running in simulation mode")
 
     # ── report-only mode ──────────────────────────────────────────────────
     if args.report_only:
@@ -238,6 +259,42 @@ def main(args: argparse.Namespace) -> None:
         return
 
     # ── continuous loop ───────────────────────────────────────────────────
+    def _handle_rate_limit_and_retry(cfg, cnum, exc, log, max_attempts=4):
+        """Vòng lặp retry: TPM → chờ 30s cùng key; TPD → rotate key."""
+        from utils.llm_factory import rotate_groq_key, get_groq_keys
+        last_err = exc
+        for attempt in range(1, max_attempts + 1):
+            err_str = str(last_err).lower()
+            is_tpd = "per day" in err_str or "tokens per day" in err_str
+            is_tpm = "per minute" in err_str or "tokens per minute" in err_str
+
+            if is_tpd:
+                new_key = rotate_groq_key()
+                if not new_key:
+                    log.error("All Groq keys exhausted for today", cycle=cnum)
+                    return
+                log.warning("TPD limit — rotated key", attempt=attempt,
+                            cycle=cnum, total_keys=len(get_groq_keys()))
+            elif is_tpm:
+                log.warning("TPM limit — waiting 30s before retry",
+                            attempt=attempt, cycle=cnum)
+                time.sleep(30)
+            else:
+                log.error("Rate limit unknown type", error=str(last_err), cycle=cnum)
+                return
+
+            try:
+                run_trading_cycle(cfg, cnum)
+                return  # thành công
+            except Exception as e2:
+                err2 = str(e2).lower()
+                if "rate_limit" in err2 or "ratelimit" in err2 or "quota" in err2 or "429" in err2:
+                    last_err = e2
+                    continue
+                log.error("Cycle error after retry", error=str(e2), cycle=cnum, attempt=attempt)
+                return
+        log.error("All retry attempts failed", cycle=cnum)
+
     interval_sec = config["trading"]["interval_minutes"] * 60
     cycle_num = 0
 
@@ -251,7 +308,13 @@ def main(args: argparse.Namespace) -> None:
             _shutdown.set()
             break
         except Exception as e:
-            logger.error("Cycle error — will retry next interval", error=str(e), cycle=cycle_num)
+            err_str = str(e).lower()
+            is_rate_limit = "rate_limit" in err_str or "ratelimit" in err_str or "quota" in err_str or "429" in err_str
+
+            if is_rate_limit:
+                _handle_rate_limit_and_retry(config, cycle_num, e, logger)
+            else:
+                logger.error("Cycle error — will retry next interval", error=str(e), cycle=cycle_num)
 
         elapsed = time.monotonic() - cycle_start
         wait_sec = max(0.0, interval_sec - elapsed)
@@ -271,6 +334,12 @@ def main(args: argparse.Namespace) -> None:
 
     logger.info("Bot stopped gracefully. Goodbye!")
     db.close()
+    try:
+        import MetaTrader5 as mt5
+        mt5.shutdown()
+        logger.info("MT5 disconnected")
+    except Exception:
+        pass
 
 
 # ────────────────────────────────────────────────────────────────────────────

@@ -10,14 +10,23 @@ trading:
   # Currency pairs to trade / Các cặp tiền để giao dịch
   symbols:
     - EURUSD
+    - USDJPY
+    - GBPUSD
+    - USDCHF
+    - NZDUSD
+    - BTCUSD
+    - ETHUSD
+    - XAUUSD
+    - XAGUSD
 
   # Timeframes to analyse / Khung thời gian để phân tích
   # Each symbol × timeframe = one pipeline run per cycle
   timeframes:
+    - M15
     - H1
 
   # Minutes between full analysis cycles / Phút giữa các chu kỳ phân tích đầy đủ
-  interval_minutes: 15
+  interval_minutes: 30
 
   # Number of candles to fetch per symbol/TF / Số nến để lấy mỗi cặp/TF
   candles_count: 500
@@ -54,7 +63,7 @@ mt5:
 # Nhà cung cấp: openai | anthropic | groq
 llm:
   provider: groq
-  model: llama-3.3-70b-versatile   # gpt-4o | claude-opus-4-6 | llama-3.3-70b-versatile
+  model: llama-3.3-70b-versatile   # gpt-4o | claude-haiku-4-5-20251001 | llama-3.3-70b-versatile
   temperature: 0.1
   max_tokens: 2000
 
@@ -119,5 +128,5 @@ logging:
 
 # ── CrewAI settings / Cài đặt CrewAI ────────────────────────
 crew:
-  max_rpm: 3                  # Max LLM requests per minute
+  max_rpm: 3                  # Max LLM requests per minute (Groq TPM=12k; 3 RPM × 1.5k = 4.5k/min safe)
   memory: false                # Enable CrewAI memory (uses more tokens)

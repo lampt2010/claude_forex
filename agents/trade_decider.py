@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from crewai import Agent, Task
+from utils.llm_factory import get_llm
 
 from tools.indicator_tools import CalculateIndicatorsTool
 from tools.mt5_tools import MT5AccountInfoTool, MT5GetPositionsTool, MT5PlaceOrderTool
@@ -26,9 +27,7 @@ def create_trade_decider_agent(config: Dict[str, Any]) -> Agent:
     Build the TradeDeciderAgent with indicator + order tools.
     Xây dựng TradeDeciderAgent với công cụ chỉ báo + đặt lệnh.
     """
-    from agents.data_collector import _get_llm
-
-    llm = _get_llm(config)
+    llm = get_llm(config)
     risk_pct = config.get("trading", {}).get("risk_percent", 1.0)
     max_loss = config.get("trading", {}).get("max_daily_loss_percent", 5.0)
     min_rr = config.get("trading", {}).get("min_rr_ratio", 2.0)

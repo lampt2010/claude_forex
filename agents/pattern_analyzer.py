@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from crewai import Agent, Task
+from utils.llm_factory import get_llm
 
 from tools.pattern_tools import PatternMatchTool, SupportResistanceTool
 
@@ -24,9 +25,7 @@ def create_pattern_analyzer_agent(config: Dict[str, Any]) -> Agent:
     Build the PatternAnalyzerAgent.
     Xây dựng PatternAnalyzerAgent.
     """
-    from agents.data_collector import _get_llm
-
-    llm = _get_llm(config)
+    llm = get_llm(config)
 
     return Agent(
         role="Chart Pattern Recognition Expert",

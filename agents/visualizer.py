@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from crewai import Agent, Task
+from utils.llm_factory import get_llm
 
 from tools.chart_tools import GenerateCandlestickChartTool, GeneratePlotlyChartTool
 
@@ -23,9 +24,7 @@ def create_visualizer_agent(config: Dict[str, Any]) -> Agent:
     Build the VisualizerAgent with chart generation tools.
     Xây dựng VisualizerAgent với các công cụ tạo biểu đồ.
     """
-    from agents.data_collector import _get_llm
-
-    llm = _get_llm(config)
+    llm = get_llm(config)
     charts_dir = config.get("charts", {}).get("folder", "./charts")
     candle_count = config.get("charts", {}).get("candles_to_plot", 150)
 

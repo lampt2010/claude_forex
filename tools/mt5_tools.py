@@ -80,9 +80,6 @@ class MT5ConnectionTool(BaseTool):
         try:
             import MetaTrader5 as mt5
 
-            if not mt5.initialize(login=login, password=password, server=server):
-                return json.dumps({"success": False, "error": str(mt5.last_error())})
-
             info = mt5.account_info()
             if info is None:
                 return json.dumps({"success": False, "error": "Cannot retrieve account info"})
@@ -138,9 +135,6 @@ class MT5FetchDataTool(BaseTool):
 
             tf_map = _get_tf_map()
             tf_const = tf_map.get(timeframe.upper(), mt5.TIMEFRAME_H1)
-
-            if not mt5.initialize():
-                raise RuntimeError("MT5 not initialized")
 
             rates = mt5.copy_rates_from_pos(symbol, tf_const, 0, count)
             if rates is None or len(rates) == 0:
@@ -205,9 +199,6 @@ class MT5AccountInfoTool(BaseTool):
 
         try:
             import MetaTrader5 as mt5
-
-            if not mt5.initialize():
-                raise RuntimeError("MT5 not initialized")
 
             info = mt5.account_info()
             if info is None:
@@ -282,9 +273,6 @@ class MT5PlaceOrderTool(BaseTool):
         try:
             import MetaTrader5 as mt5
 
-            if not mt5.initialize():
-                raise RuntimeError("MT5 not initialized")
-
             sym_info = mt5.symbol_info(symbol)
             if sym_info is None:
                 raise RuntimeError(f"Symbol {symbol} not found in MT5")
@@ -308,6 +296,16 @@ class MT5PlaceOrderTool(BaseTool):
                 sl = round(price + sl_pips * pip, digits)
                 tp = round(price - tp_pips * pip, digits)
 
+            # Select filling mode from what the symbol supports:
+            # filling_mode bitmask: bit0=FOK, bit1=IOC; 0=market execution (RETURN)
+            fm = getattr(sym_info, "filling_mode", 0)
+            if fm & 2:
+                filling = mt5.ORDER_FILLING_IOC
+            elif fm & 1:
+                filling = mt5.ORDER_FILLING_FOK
+            else:
+                filling = mt5.ORDER_FILLING_RETURN
+
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
                 "symbol": symbol,
@@ -320,7 +318,7 @@ class MT5PlaceOrderTool(BaseTool):
                 "magic": magic,
                 "comment": comment,
                 "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
+                "type_filling": filling,
             }
 
             result = mt5.order_send(request)
@@ -376,9 +374,6 @@ class MT5GetPositionsTool(BaseTool):
         try:
             import MetaTrader5 as mt5
 
-            if not mt5.initialize():
-                return json.dumps({"positions": [], "mode": "SIMULATION"})
-
             positions = mt5.positions_get(symbol=symbol) if symbol else mt5.positions_get()
             if positions is None:
                 return json.dumps({"positions": []})
@@ -426,9 +421,6 @@ class MT5ClosePositionTool(BaseTool):
         try:
             import MetaTrader5 as mt5
 
-            if not mt5.initialize():
-                return json.dumps({"success": True, "mode": "SIMULATION", "ticket": ticket})
-
             position = mt5.positions_get(ticket=ticket)
             if not position:
                 return json.dumps({"success": False, "error": f"Ticket {ticket} not found"})
@@ -437,6 +429,15 @@ class MT5ClosePositionTool(BaseTool):
             tick = mt5.symbol_info_tick(pos.symbol)
             close_price = tick.bid if pos.type == mt5.ORDER_TYPE_BUY else tick.ask
             close_type = mt5.ORDER_TYPE_SELL if pos.type == mt5.ORDER_TYPE_BUY else mt5.ORDER_TYPE_BUY
+
+            sym_info_c = mt5.symbol_info(pos.symbol)
+            fm_c = getattr(sym_info_c, "filling_mode", 0) if sym_info_c else 0
+            if fm_c & 2:
+                filling_c = mt5.ORDER_FILLING_IOC
+            elif fm_c & 1:
+                filling_c = mt5.ORDER_FILLING_FOK
+            else:
+                filling_c = mt5.ORDER_FILLING_RETURN
 
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
@@ -449,7 +450,7 @@ class MT5ClosePositionTool(BaseTool):
                 "magic": pos.magic,
                 "comment": "Bot Close",
                 "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC,
+                "type_filling": filling_c,
             }
 
             result = mt5.order_send(request)
